@@ -35,22 +35,22 @@ def copy_data_from_key(data_from, data_to, key):
 def test_equal_subset():
     data = pd.DataFrame(
         {
-           "key1": [1, 1, 2, 2, 3], 
-           "key2": [1, 2, 1, 2, 0], 
-           "val1": [1, 2, 2, 3, 4], 
-           "val2": [1, 2, 2, 3, 4], 
-           "val3": [1, 2, 2, 3, 4], 
+            "key1": [1, 1, 2, 2, 3],
+            "key2": [1, 2, 1, 2, 0],
+            "val1": [1, 2, 2, 3, 4],
+            "val2": [1, 2, 2, 3, 4],
+            "val3": [1, 2, 2, 3, 4],
         }
     )
     assert equal_subset(data, data, ["key1", "key2"])
 
     more_data = pd.DataFrame(
         {
-           "key1": [5, 3], 
-           "key2": [1, 2], 
-           "val1": [2, 2], 
-           "val2": [3, 6], 
-           "val3": [4, 2], 
+            "key1": [5, 3],
+            "key2": [1, 2],
+            "val1": [2, 2],
+            "val2": [3, 6],
+            "val3": [4, 2],
         }
     )
     superset = pd.concat([data, more_data], ignore_index=True)
@@ -60,34 +60,34 @@ def test_equal_subset():
     assert not equal_subset(superset, data, ["key1", "key2"])
 
     values_differ = superset.copy()
-    values_differ.loc[0, 'val2'] = 3
-    values_differ.loc[2, 'val3'] = 6
+    values_differ.loc[0, "val2"] = 3
+    values_differ.loc[2, "val3"] = 6
     assert not equal_subset(data, values_differ, ["key1", "key2"])
 
 
 def test_copy():
     data = pd.DataFrame(
         {
-           "key1": [1, 1, 2, 2, 3], 
-           "key2": [1, 2, 1, 2, 0], 
-           "val1": [1, 2, 2, 3, 4], 
-           "val2": [1, 2, 2, 3, 4], 
-           "val3": [1, 2, 2, 3, 4], 
+            "key1": [1, 1, 2, 2, 3],
+            "key2": [1, 2, 1, 2, 0],
+            "val1": [1, 2, 2, 3, 4],
+            "val2": [1, 2, 2, 3, 4],
+            "val3": [1, 2, 2, 3, 4],
         }
     )
     more_data = pd.DataFrame(
         {
-           "key1": [5, 3], 
-           "key2": [1, 2], 
-           "val1": [2, 2], 
-           "val2": [3, 6], 
-           "val3": [4, 2], 
+            "key1": [5, 3],
+            "key2": [1, 2],
+            "val1": [2, 2],
+            "val2": [3, 6],
+            "val3": [4, 2],
         }
     )
     superset = pd.concat([data, more_data], ignore_index=True)
     values_differ = data.copy()
-    values_differ.loc[0, 'val2'] = 3
-    values_differ.loc[2, 'val3'] = 6
+    values_differ.loc[0, "val2"] = 3
+    values_differ.loc[2, "val3"] = 6
 
     assert not equal_subset(values_differ, superset, ["key1", "key2"])
     new_superset = copy_data_from_key(values_differ, superset, ["key1", "key2"])
