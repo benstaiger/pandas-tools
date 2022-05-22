@@ -1,4 +1,84 @@
+import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
+from scipy.stats import norm
+from sklearn.datasets import load_iris
+
+
+def plot_stacked_hist(data1, data2, *, stacked=False, prop=True, xlab=""):
+    plt.title(f"{data1.name} vs. {data2.name}")
+    _, bins = np.histogram(pd.concat([data1, data2], ignore_index=True), bins=10)
+    if stacked:
+        plt.hist(
+            [data1, data2],
+            edgecolor="black",
+            color=["blue", "red"],
+            histtype="barstacked",
+            alpha=0.5,
+            bins=20,
+            density=prop,
+            label=[f"{data1.name}", f"{data2.name}"],
+        )
+    else:
+        def plot_data(data, color, with_normal=True):
+            plt.hist(
+                data,
+                edgecolor="black",
+                color=color,
+                alpha=0.5,
+                bins=bins,
+                density=prop,
+                label=f"{data.name}",
+            )
+            if with_normal:
+                continuous = np.linspace(bins[0], bins[-1], num=len(bins)*5)
+                sigma = data.std()
+                mu = data.mean()
+                plt.plot(
+                    continuous,
+                    1 / (sigma * np.sqrt(2 * np.pi))
+                    * np.exp(-((continuous - mu) ** 2) / (2 * sigma ** 2)),
+                    linewidth=2,
+                    color=color,
+                )
+        plot_data(data1, "blue")
+        plot_data(data2, "red")
+    plt.legend(loc="upper right")
+    plt.xlabel(xlab)
+    if prop:
+        plt.ylabel("Distribution of Occurences")
+    else:
+        plt.ylabel("# of Occurences")
+    plt.tight_layout()
+    plt.show()
+
+
+def chi_square(counts):
+    row_total = counts.sum(axis=1)
+    col_total = counts.sum(axis=0)
+    props = col_total / col_total.sum()
+    expected = pd.DataFrame(
+        [[p * r for p in props.values] for r in row_total.values],
+        index=row_total.index,
+        columns=props.index,
+    )
+    dif = counts - expected
+    stats = dif * dif / expected
+    return stats.sum().sum(), expected, stats
+
+
+def propagate_val(data, key_col, val_col):
+    data.set_index(key_col, inplace=True)
+    keys = data.index.unique()
+    for k in keys:
+        vals = data.loc[k][val_col].unique()
+        vals = [v for v in vals if v != ""]
+        if len(vals) > 1:
+            print(f"{k} has different values {vals}")
+        if len(vals) == 1:
+            data.loc[k][val_col] = vals[0]
+    data.reset_index()
+    return data
 
 
 def equal_subset(subset, superset, key) -> bool:
@@ -94,6 +174,17 @@ def test_copy():
     assert equal_subset(values_differ, new_superset, ["key1", "key2"])
 
 
+def test_hist():
+    iris = load_iris(as_frame=True)
+    iris_data = iris["data"]
+    t0 = iris_data["sepal length (cm)"][iris["target"] == 0]
+    t1 = iris_data["sepal length (cm)"][iris["target"] == 1]
+    t0.name = iris["target_names"][0]
+    t1.name = iris["target_names"][1]
+    plot_stacked_hist(t0, t1, xlab="iris sepal length (cm)")
+
+
 if __name__ == "__main__":
     test_equal_subset()
     test_copy()
+    # test_hist()
